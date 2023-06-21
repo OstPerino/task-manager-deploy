@@ -1,0 +1,46 @@
+version: '3'
+services:
+  nginx:
+    restart: always
+    build:
+      context: ./nginx
+      dockerfile: Dockerfile
+    ports:
+      - '3000:80'
+
+  api:
+    restart: always
+    build:
+      context: ./back-end
+      dockerfile: Dockerfile
+    environment:
+      MYSQL_SERVER: mariadb
+      MYSQL_ROOT_PASSWORD: ${DB_PASS}
+      MYSQL_DATABASE: ${DB_NAME}
+      MYSQL_USER: ${DB_USER}
+      MYSQL_PASSWORD: ${DB_PASS}
+      MYSQL_PORT: ${DB_PORT}
+    depends_on:
+      - mariadb
+
+  client:
+    build:
+      context: ./front-end
+      dockerfile: Dockerfile
+    environment:
+      API_URL: ${API_URL}
+
+  mariadb:
+    image: mariadb:latest
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: ${DB_PASS}
+      MYSQL_DATABASE: ${DB_NAME}
+      MYSQL_USER: ${DB_USER}
+      MYSQL_PASSWORD: ${DB_PASS}
+      MYSQL_TCP_PORT: ${DB_PORT}
+    volumes:
+      - db:/data/db
+
+volumes:
+  db:
